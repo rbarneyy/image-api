@@ -1,36 +1,27 @@
 const express = require('express');
-const { exec } = require('child_process');
+const axios = require('axios');
+
 const app = express();
-const port = 3000;
 
 app.get('/randomimg', async (req, res) => {
   try {
-    await installPackage('axios'); // Install axios dynamically
-    const axios = require('axios'); // Import axios
-
+    // Fetch a random image from the internet
     const response = await axios.get('https://source.unsplash.com/random');
-    const imageUrl = response.request.res.responseUrl;
-    res.json({ url: imageUrl });
+    
+    // Set the response content type to image/jpeg
+    res.set('Content-Type', 'image/jpeg');
+    
+    // Return the image data
+    res.send(response.data);
   } catch (error) {
-    console.error('Error fetching random image:', error);
-    res.status(500).json({ error: 'Failed to fetch random image' });
+    // Log the error
+    console.error(error);
+    
+    // Return an error response
+    res.status(500).send('Internal Server Error');
   }
 });
 
-function installPackage(packageName) {
-  return new Promise((resolve, reject) => {
-    exec(`npm install ${packageName}`, (error, stdout, stderr) => {
-      if (error) {
-        console.error(`Error installing ${packageName}: ${error.message}`);
-        reject(error);
-      } else {
-        console.log(`Installed ${packageName}`);
-        resolve();
-      }
-    });
-  });
-}
-
-app.listen(port, () => {
-  console.log(`API server listening at http://localhost:${port}`);
+app.listen(3000, () => {
+  console.log('Server started on port 3000');
 });
